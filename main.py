@@ -2,27 +2,51 @@
 # the open-source pygame library
 # throughout this file
 import pygame
+import sys
 from constants import *
 from circleshape import *
 from player import Player
+from asteroid import Asteroid
+from asteroidfield import AsteroidField
 
 
 def main():
-    #init the screen
+    #init the screen and variables
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
     dt = 0
-    Spaceship = Player(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, PLAYER_RADIUS)
+
+    #Create groups and player (always set the groups before)
+    updatable = pygame.sprite.Group()
+    drawable = pygame.sprite.Group()
+    asteroids = pygame.sprite.Group()
+    Player.containers = (updatable, drawable)
+    Asteroid.containers = (asteroids, updatable, drawable)
+    AsteroidField.containers = (updatable)
+
+    Spaceship = Player(SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+    Fieldofasteroids = AsteroidField()
 
     #Main loop
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return
+                return   
+
+    #Updating and checking collision
+        updatable.update(dt)
+        for Asteroids in asteroids:
+            if Asteroids.collisionscheck(Spaceship) == True:
+                sys.exit("Game over")
+
+    #Else generate antoher frame
         pygame.Surface.fill(screen,0)
-        Player.draw(Spaceship, screen)
+        for items in drawable:
+            items.draw(screen)
         pygame.display.flip()
+
+        #Limit the framerate
         dt = clock.tick(60) / 1000
 
 
